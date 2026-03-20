@@ -5,7 +5,7 @@
 > 由`coordinator`在收到openclaw递交任务之后，将任务拆解成多个子任务，生成task_breakdown.json然后提交，成员通过 `git pull` 同步查看各自任务详情
 
 ### 模板条目
-参考`task/task_breakdown_template.json文件`
+参考`tasks/task_breakdown_template.json文件`
 
 ### 记录文件
 在tasks/task_breakdown.json中

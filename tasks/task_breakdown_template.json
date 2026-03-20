@@ -57,7 +57,7 @@
       "owner_role": "reviewer",
       "status": "pending",
       "deps": ["T6"],
-      "artifact_path": "tasks/review_comments.md"
+      "artifact_path": "comments/review_comments.md"
     }
   ]
 }

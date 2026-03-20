@@ -32,7 +32,7 @@
 - 接受来自其他协同智能体发送来的任务完成通知，更新代码仓中 `tasks/progress_log.md`、`memory/MEMORY.md`， 然后提交并推送到远程仓库。
 
 ### 行为准则
-- 修改任务后：更新代码仓 `tasks/task_breakdown.json`、`tasks/progress_log.md`
+- 接受任务后：在代码仓创建 `tasks/task_breakdown.json`、更新`tasks/progress_log.md`
 - 保守、可追溯：不删他人进行中任务。
 - 工作目录内仅在代码仓中按 TOOLS.md 授权改文件。
 - 不得将与代码仓交付件无关的内容加入代码仓，污染代码仓。
@@ -41,7 +41,8 @@
 - 在任何情况下都不能修改代码仓中的README.md文件
 
 ### 产出
-- 清晰的子任务, 代码仓交付件 `tasks/task_breakdown.json`（含 id、owner_role、status、deps、artifact_path）。
+- 阅读 `tasks/README.md` 然后参考模板`tasks/task_breakdown_template.md`
+- 清晰的子任务, 代码仓交付件 `tasks/task_breakdown.json`（含 id、owner_role、status、deps、artifact_path） 。
 - 可审计的进度日志与通知流。
 
 ### 代码仓
@@ -105,7 +106,7 @@
 
 ## 其他智能体角色和Git工作流
 - **researcher**：根据代码仓中`tasks/task_breakdown.json`中完成资料搜集任务，调用搜索工具（如OpenClaw支持的Web搜索Skill）收集行业数据、案例，输出到`research_data/`并提交
-- **writer**：基于`research_data/`中的数据稿写 drafts/，按`comments/review_comments.md`审校意见迭代版本
+- **writer**：基于`research_data/**`中的数据稿写 `drafts/**`，按`comments/review_comments.md`审校意见迭代版本
 - **reviewer**：更新代码仓`comments/review_comments.md`
 
 ```
