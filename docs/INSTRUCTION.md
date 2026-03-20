@@ -11,105 +11,238 @@
 3. **提交前缀**：各 Agent 在 `multi-agent/` git commit信息 必须以 `[coordinator]` / `[researcher]` / `[writer]` / `[reviewer]` 开头（与对应文件一致）。
 ---
 
-## 2. OpenClaw 注册agent步骤
+## 2. OpenClaw 注册 Agent 步骤
 
-### 确定注册名和配置元
+### 2.1 确定注册名和配置元
 
-| OpenClaw 注册名 | 配置源文件 |
-|-----------------|----------------------|
-| coordinator     | `agents/coordinator.md` |
-| researcher      | `agents/researcher.md` |
-| writer          | `agents/writer.md` |
-| reviewer        | `agents/reviewer.md` |
+| OpenClaw 注册名 | 配置源文件 | 工作目录 |
+|-----------------|----------------------|-------------------|
+| coordinator     | `agents/coordinator.md` | `~/openclaw-workspaces/coordinator/` |
+| researcher      | `agents/researcher.md` | `~/openclaw-workspaces/researcher/` |
+| writer          | `agents/writer.md` | `~/openclaw-workspaces/writer/` |
+| reviewer        | `agents/reviewer.md` | `~/openclaw-workspaces/reviewer/` |
 
+### 2.2 创建智能体（以 coordinator 为例）
 
-### 逐步创建上述四个智能体，（以创建coordinator为例），其他智能体参照此流程：
 ```bash
-openclaw agents add coordinator 
+# 1. 创建智能体
+openclaw agents add coordinator
+
+# 2. 克隆代码仓到工作空间
+cd ~/openclaw-workspaces/coordinator/
+git clone https://github.com/zhangyoujian/multi-agent.git
+
+# 3. 为角色生成配置文件（参考 agents/coordinator.md）
+#    - SOUL.md: 定义角色职责和行为准则
+#    - TOOLS.md: 定义工具权限和可操作路径
+#    - USER.md: 定义用户上下文和协作关系
 ```
 
-- **生成角色配置**: 生成coordinator专属的SOUL.md、TOOLS.md、USER.md, 参考`agents/coordinator.md`相关指示和要求
-- **为角色预装技能**： 打开 `agents/coordinator.md` 中的「预装 Skills」列表，在 OpenClaw 中为该 Agent **启用同名或等价能力**（若市场技能名不同，在 TOOLS.md 中已说明映射关系则由实现方适配）
+### 2.3 预装技能
+
+根据 `agents/<role>.md` 中的「Skills」列表，为每个 Agent 启用对应技能：
+
+| 角色 | 核心技能 |
+|------|----------|
+| coordinator | sessions_send（任务通知）、cron（定时检查） |
+| researcher | web_search、baidu-search（资料搜集） |
+| writer | docx、markdown-converter（文档撰写） |
+| reviewer | 无特殊技能（审校为主） |
+
 ---
 
-- **创建团队**： `openclaw teams create ... --agents coordinator,researcher,writer,reviewer` 指令，创建协同团队。
+## 3. 智能体间通信配置
 
-## 3. Git 在 仓库`multi-agent/` 内的标准流程（）
+### 3.1 通信工具
+
+OpenClaw 提供以下工具实现智能体间通信：
+
+| 工具 | 用途 | 场景 |
+|------|------|------|
+| `sessions_send` | 向指定会话发送消息 | 实时通知、任务分发 |
+| `sessions_spawn` | 创建新的子代理会话 | 异步任务执行 |
+| `subagents` | 管理子代理 | 查看/终止/引导子任务 |
+
+### 3.2 配置示例
+
+在 `openclaw.json` 中配置多智能体：
+
+```json
+{
+  "agents": {
+    "list": [
+      {
+        "id": "coordinator",
+        "workspace": "~/openclaw-workspaces/coordinator"
+      },
+      {
+        "id": "researcher", 
+        "workspace": "~/openclaw-workspaces/researcher"
+      },
+      {
+        "id": "writer",
+        "workspace": "~/openclaw-workspaces/writer"
+      },
+      {
+        "id": "reviewer",
+        "workspace": "~/openclaw-workspaces/reviewer"
+      }
+    ],
+    "default": "coordinator"
+  },
+  "bindings": [
+    {
+      "agentId": "coordinator",
+      "match": { "channel": "webchat" }
+    }
+  ]
+}
+```
+
+### 3.3 通信示例
+
+**coordinator 通知 researcher 执行任务：**
+
+```python
+# 使用 sessions_send
+sessions_send(
+    sessionKey="agent:researcher:main",
+    message="请根据 tasks/task_breakdown.json 搜集相关资料，输出到 research_data/ 目录"
+)
+```
+
+**coordinator spawn 子代理执行任务：**
+
+```python
+# 使用 sessions_spawn
+sessions_spawn(
+    task="分析最新行业报告，提取关键数据到 research_data/summary.md",
+    runtime="subagent",
+    agentId="researcher",
+    mode="run"  # 一次性任务
+)
+```
+
+**查看活跃的子代理：**
+
+```python
+subagents(action="list")
+```
+
+---
+
+## 4. Git 协作流程
+
+### 4.1 标准操作流程
 
 ```bash
+# 进入代码仓目录
+cd ~/openclaw-workspaces/<role>/multi-agent
+
+# 拉取最新
 git pull --rebase
+
+# 查看状态
 git status
-git add <允许的文件>
-git commit -m "[RoleName] 简要说明"
+
+# 添加允许的文件
+git add <允许的路径>
+
+# 提交（必须带角色前缀）
+git commit -m "[coordinator] 更新任务进度"
+
+# 推送
 git pull --rebase
 git push
 ```
 
-**各角色允许改动的路径**见对应 `agents/<role>.md` 的「仓库内可写路径」表；**禁止**修改未授权路径、禁止在 `multi-agent/` 根目录创建 Agent 私有配置文件。
+### 4.2 各角色可操作路径
+
+| 角色 | 可写 | 只读 |
+|------|------|------|
+| coordinator | `tasks/**`、`memory/**` | `drafts/**`、`research_data/**`、`comments/**` |
+| researcher | `research_data/**` | `drafts/**`、`comments/**` |
+| writer | `drafts/**` | `research_data/**`、`comments/**` |
+| reviewer | `comments/**` | `drafts/**`、`research_data/**` |
 
 ---
 
-## 4. 智能体内部通信 (OpenClaw 须落实的行为)
+## 5. 智能体内部协作规范
 
-在 openclaw.json 中添加配置：
-```json
-{
-  tools: {
-    agentToAgent: {
-      enabled: true,
-      allow: ["coordinator", "researcher", "writer", "reviewer"],
-    },
-  },
-}
+### 5.1 任务流转
 
 ```
+coordinator 拆解任务 → 通知 researcher → researcher 搜集资料 → 
+writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认发布
+```
 
-在一个智能体的会话中，可以直接调用 sessions_send 向另一个智能体发消息。例如： coordinator通知researcher开始执行任务
+### 5.2 进度同步
+
+- **coordinator** 维护 `tasks/progress_log.md`，记录各角色完成状态
+- 所有角色通过 `git pull` 获取最新进度
+- 每次状态更新后必须 `git commit` + `git push`
+
+### 5.3 消息通知规范
+
+| 场景 | 发送方 | 接收方 | 消息内容 |
+|------|--------|--------|----------|
+| 任务分配 | coordinator | researcher | 任务ID、要求、截止时间 |
+| 资料完成 | researcher | coordinator | 产出文件路径、数据摘要 |
+| 稿件完成 | writer | coordinator | 稿件版本、待审校章节 |
+| 审校完成 | reviewer | writer | 修改意见、问题列表 |
+
+### 5.4 审计追溯
+
+- 所有 Git 提交必须带 `[角色名]` 前缀
+- Commit message 示例：
+  - `[coordinator] 创建任务拆解 task_breakdown.json`
+  - `[researcher] 添加2025年市场规模数据`
+  - `[writer] 完成第一章初稿`
+  - `[reviewer] 提出15条审校意见`
+
+---
+
+## 6. 定时任务配置（可选）
+
+coordinator 可配置定时检查任务：
+
 ```bash
-让 researcher 帮我从网上搜集资料，输出research_data.md并提交
+# 创建定时任务：每5分钟检查一次代码仓更新
+openclaw cron add \
+  --name "check-updates" \
+  --schedule "*/5 * * * *" \
+  --session-target isolated \
+  --payload '{"kind":"agentTurn","message":"检查代码仓更新并同步进度"}'
 ```
 
-## 5. 智能体内部协作 (agent 须落实的行为)
-**
+---
 
-1. **协同清晰** 
-    任务进度同步：`coordinator`定期更新progress_log.md（如“`researcher`已完成数据收集，`writer`需提交初稿”），团队成员通过git pull获取最新状态。
-    修改意见传递：`reviewer` 根据（如drafts/chapter1_v1.md） 撰写修改意见到 comments/review_comments.md中, 并通过git commit 提交修改意见
-    草稿更新:    `writer`根据意见修改后生成（drafts/chapter1_v2.md），并通过git commit说明修改内容（如“根据审校意见补充2025年市场规模数据”）。
-    版本回溯与审计：Git的Commit历史可追溯每个Agent的修改轨迹（如“2026-03-15 研究员添加了竞品A的用户增长数据”），便于复盘协作效率与责任定位。
+## 7. 禁止行为（全局）
 
-2. **产出明确** （以各 `agents/<role>.md` 文件内容要求为准）：
-   coordinator → `tasks/task_breakdown.json`；
-   researcher → `research_data/*`；
-   writer → `drafts/chapter1_v1.md` /  + 最终 PDF；
-   reviewer → `comments/review_comments.md`；
-   coordinator → `tasks/*`、`memory/*` 等。
+- 在 `multi-agent/` 内放置 **SOUL.md、TOOLS.md、USER.md** 或各 Agent 私有 **memory/skills**
+- 越权修改其他角色独占路径（见各 `agents/*.md`）
+- 提交信息不带 **正确 `[角色名]`** 前缀
+- 未经授权删除或覆盖他人已提交的文件
 
 ---
 
-## 6. 禁止行为（全局）
+## 8. 执行顺序
 
-- 在 `multi-agent/` 内放置 **SOUL.md、TOOLS.md、USER.md** 或各 Agent 私有 **memory/skills**（与仓库平级的那些）。
-- 越权修改其他角色独占路径（见各 `agents/*.md`）。
-- 提交信息不带 **正确 `[角色名]`** 前缀。
-
----
-
-## 7. 执行顺序建议
-
-1. 阅读仓库 `agents/*.md`。  
-2. 按第 2 节创建智能体团队、并配置智能体的独立工作空间，按照第4节配置通信方式
-3. 为每个agent生成专属的 `SOUL.md / TOOLS.md / USER.md`
-
-若 OpenClaw API 与文中 CLI 不一致，**以相同语义**绑定：配置根目录 = `~/openclaw-workspaces/<agent_name>/`，代码/文件操作根 = `./multi-agent`。
-
-## 8. 创建完成验收清单
-
-- [ ] 四个目录 协同智能体的工作目录 均存在，且各有 **独立** `multi-agent/` 克隆。
-- [ ] 每个目录下 **SOUL.md / TOOLS.md / USER.md** 与 `agents/<role>.md` 定稿一致。
-- [ ] 四个 Agent 均已 `openclaw agents add`
-- [ ] 各角色预装 Skills 与 `agents/<role>.md` 列表一致或已等价映射。
+1. 阅读仓库 `agents/*.md` 了解各角色配置
+2. 按第 2 节创建四个智能体并克隆代码仓
+3. 为每个 Agent 生成 `SOUL.md / TOOLS.md / USER.md`
+4. 按第 3 节配置智能体间通信
+5. 重启 Gateway：`openclaw gateway restart`
 
 ---
+
+## 9. 验收清单
+
+- [ ] 四个工作目录均存在，且各有独立 `multi-agent/` 克隆
+- [ ] 每个目录下 **SOUL.md / TOOLS.md / USER.md** 与 `agents/<role>.md` 一致
+- [ ] 四个 Agent 均已 `openclaw agents add` 注册
+- [ ] 各角色预装 Skills 与 `agents/<role>.md` 列表一致
+- [ ] `sessions_send` / `sessions_spawn` 工具可用
+- [ ] 测试：coordinator 能成功向 researcher 发送消息
 
 
