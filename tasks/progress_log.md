@@ -8,4 +8,4 @@
 | 2026-03-22 10:42 | writer      | T5初稿撰写完成，drafts/report_v1.md 已提交。 |
 | 2026-03-22 10:43 | coordinator | 已合并T5初稿，准备通知reviewer执行T6审校。 |
 | 2026-03-22 10:42 | writer      | T5初稿撰写完成，drafts/report_v1.md 已提交 (commit: 7793fc2)。 |
-| 2026-03-22 10:43 | coordinator | 已更新task_breakdown.json，T5状态已更新为completed，T6状态为pending_in_progress，已通知reviewer执行审校。 |
+| 2026-03-22 10:43 | coordinator | 已更新task_breakdown.json，T5状态已更新为completed，T6状态为pending_in_progress，已通知reviewer执行审校。 || 2026-03-22 10:53 | reviewer   | T6审校完成，comments/review_comments.md 已提交，8条审校意见（含1条阻塞项）。 |
