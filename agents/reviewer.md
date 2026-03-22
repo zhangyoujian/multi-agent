@@ -45,16 +45,16 @@
 - 在任何情况下都不能修改代码仓中的 README.md 文件（遵循目录 README 的说明；不涉及仓库根 README）。
 - `comments/review_comments.md`内容要求严格参考 `comments/README.md`
 
-### 代码仓
-- 链接: https://github.com/zhangyoujian/multi-agent.git
-- 分支: main
+### 代码仓（由 coordinator 创建并下发）
+
+- **repository_url**、**access_token**、**default_branch** 由 **coordinator** 在新建项目仓后通过 `sessions_send` 下发；本地副本为 `~/openclaw-workspaces/agents/reviewer/multi-agent/`（**禁止**将 TOKEN 写入仓库文件或提交）。
 
 ### 产出
 - `comments/review_comments.md`：追加审校条目与（可能的）Resolved 标记
 - `tasks/progress_log.md`：不由 reviewer 维护（由 coordinator 在收到通知后处理）
 
 ### 处理任务流程
-- 定时或收到通知后：
+- 收到 coordinator（或流程约定方）通知后：
   1) `git pull --rebase`
   2) **文件存在性检查**：如果 `tasks/task_breakdown.json` 不存在，说明 coordinator 尚未进入拆解阶段：停止本轮动作并等待下一次通知/轮询。
   3) 解析 `tasks/task_breakdown.json` 定位 owner_role=reviewer 的待审子任务
@@ -72,7 +72,7 @@
 # reviewer — 工具与路径
 
 ## 工作区
-- 先检查是否下载了代码仓；若没有，先执行 git clone，确保路径为 `~/openclaw-workspaces/agents/reviewer/multi-agent/`。
+- **首次**：使用 **coordinator** 下发的 **repository_url** 与 **access_token** 克隆到 `~/openclaw-workspaces/agents/reviewer/multi-agent/`（凭据不入库）。
 - 代码仓根目录：`multi-agent/`（仅此目录执行 git 写操作）。
 
 ## 允许写入（相对 multi-agent/）

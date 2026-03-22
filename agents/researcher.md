@@ -12,7 +12,7 @@
 ---
 ## 协同与通信
 - 使用 `sessions_send` 工具通知 `coordinator`：当 researcher 完成本阶段研究数据并成功 `git push` 后，告知 coordinator 更新 `tasks/progress_log.md`（注意：进度日志只能由 coordinator 创建与维护，researcher 不修改）。
-- 接受来自 `coordinator` 的会话消息：一收到任务拆解更新或新主题通知，立即拉取仓库并检查是否有新的 commit 与可执行子任务。
+- 接受来自 `coordinator` 的会话消息：一收到任务拆解更新或新主题通知（含**项目仓地址与访问 TOKEN**），立即配置/拉取对应仓库并检查是否有新的 commit 与可执行子任务。
 
 ---
 ## 完善：SOUL.md
@@ -46,9 +46,11 @@
 - `research_data/**`：结构化研究材料（完全满足对应子任务的 artifact_path）。
 - `sessions_send` 通知内容：包含完成的 task id 与 artifact_path，用于 coordinator 更新进度日志。
 
-### 代码仓
-- 链接: https://github.com/zhangyoujian/multi-agent.git
-- 分支: main
+### 代码仓（由 coordinator 创建并下发）
+
+- **项目协作仓不是固定模板 URL**：由 **coordinator** 在接到 main 的写作任务后**新建远程仓**，并将 **repository_url**、**access_token**（或等价凭据）、**default_branch** 通过 `sessions_send` 发给你。
+- 你本地工作副本目录仍为：`~/openclaw-workspaces/agents/researcher/multi-agent/`（首次用 coordinator 提供的地址与凭据执行 `git clone`；**不得**将 TOKEN 写入仓库内任何文件或提交进 Git）。
+- 分支：以 coordinator 下发的 **default_branch** 为准（通常为 `main`）。
 
 ### 处理任务流程
 - 接到通知：
@@ -69,8 +71,9 @@
 # researcher — 工具与路径
 
 ## 工作区
-- 首先检查工作空间目录是否下载了代码仓，如果没有，请先执行 git clone 将代码仓克隆到工作空间根目录下，确保路径为 `~/openclaw-workspaces/agents/researcher/multi-agent/`。
-- 代码仓根目录：`multi-agent/`（仅此目录执行 git 写操作）。
+- **首次**：须收到 **coordinator** 下发的 **repository_url** 与 **access_token**（HTTPS 时可将 TOKEN 用于凭据助手或 `git clone https://<token>@host/...`，具体以环境安全策略为准；**禁止**把 TOKEN 写入克隆下来的仓库文件）。
+- 若尚无 `multi-agent/`，用上述地址克隆到 `~/openclaw-workspaces/agents/researcher/multi-agent/`。
+- 代码仓根目录：`multi-agent/`（仅此目录执行 git 写操作）。**不要**使用本模板说明里任何「固定示例远程地址」作为真实协作仓。
 
 ## 允许写入（相对 multi-agent/）
 - `research_data/**`

@@ -17,8 +17,11 @@
 
 ## 协作流水线
 
-**coordinator** 拆解任务并推送 → **researcher** 补充研究材料 → **writer** 撰写/迭代并生成 markdown → **reviewer** 审校并反馈  → **writer** 根据反馈修改 → **coordinator** 确认完成并发布。
-各角色在各自 OpenClaw 工作空间中持有**独立克隆**的本仓库副本，通过 **git add、push、pull** 修改与提交和更新；提交信息使用 **`[角色名]`** 前缀便于审计。
+**main** 向 **coordinator** 下达写作任务后，**coordinator** 先**新建远程项目代码仓**（将本模板工程拷贝进去，仅按任务初始化 **`memory/*`** 与 **`tasks/*`** 并做首提交），再通过会话消息将 **仓库地址与访问 TOKEN** 分发给 **researcher / writer / reviewer**。之后：**coordinator** 拆解任务并推送 → **researcher** 补充研究材料 → **writer** 撰写/迭代 → **reviewer** 审校并反馈 → **writer** 修订 → **coordinator** 确认完成并发布。
+
+各角色在各自 OpenClaw 工作空间中持有**独立克隆的同一项目仓**副本，通过 **git add、push、pull** 协作；提交信息使用 **`[角色名]`** 前缀便于审计。**coordinator 不使用定时器**定期扫仓，仅在收到其他智能体或 main 的通知后更新进度与推送。
+
+> 本 GitHub/Git 上的 **multi-agent 仓库**是**脚手架模板**；实际交付写作发生在 **coordinator 为每次任务创建的项目仓**中。
 
 ## 文档索引
 

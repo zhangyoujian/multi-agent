@@ -30,9 +30,10 @@
 # 1. 创建智能体
 openclaw agents add coordinator
 
-# 2. 克隆代码仓到工作空间
-cd ~/openclaw-workspaces/agents/coordinator/
-git clone https://github.com/zhangyoujian/multi-agent.git
+# 2. coordinator 工作空间下**不要**预先克隆固定模板远程地址。
+#    实际「项目协作代码仓」由 coordinator 在接到 main 的写作任务后**新建**：
+#    将本模板工程文件树拷贝到新远程仓，仅初始化 memory/*、tasks/* 等并首提交后 push。
+#    之后 coordinator 在 ~/openclaw-workspaces/agents/coordinator/multi-agent/ 操作该**项目仓**。
 
 # 3. 为角色生成配置文件（参考 agents/coordinator.md）
 #    - SOUL.md: 定义角色职责和行为准则
@@ -47,7 +48,7 @@ git clone https://github.com/zhangyoujian/multi-agent.git
 
 | 角色 | 核心技能  |
 |------|----------|
-| coordinator | sessions_send（任务通知）、cron（定时检查） |
+| coordinator | sessions_send（任务通知与凭据下发） |
 | researcher | web_search、baidu-search（资料搜集） |
 | writer | docx、markdown-converter（文档撰写） |
 | reviewer | 无特殊技能（审校为主） |
@@ -195,9 +196,10 @@ writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认
 
 ### 5.2 进度同步
 
-- **coordinator** 维护 `tasks/progress_log.md`，记录各角色完成状态
-- 所有角色通过接受来自coordinator角色的消息后，使用 `git pull` 更新代码仓获取最新进度
-- 每次状态更新后必须 `git commit` + `git push`
+- **coordinator** 维护 `tasks/progress_log.md`，记录各角色完成状态（**仅**在收到其他智能体或 main 的会话通知后拉取、更新并推送）。
+- 所有角色在收到 **coordinator** 通知后，使用 `git pull` 更新**当前项目协作仓**获取最新进度。
+- 每次状态更新后必须 `git commit` + `git push`（各角色各自负责的目录）。
+- **项目仓地址与访问 TOKEN**：由 **coordinator** 在新建远程仓后通过 `sessions_send` 发给 researcher / writer / reviewer；**禁止**将 TOKEN 写入仓库内文件。
 
 ### 5.3 消息通知规范
 
@@ -225,12 +227,10 @@ writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认
 
 ---
 
-## 6. 为 coordinator 配置定时任务，每隔 5 分钟检查代码仓更新并同步进度， 然后通知其他角色执行任务
-openclaw cron add \
-  --name "check-updates" \
-  --schedule "*/5 * * * *" \
-  --session-target isolated \
-  --payload '{"kind":"agentTurn","message":"检查代码仓更新并同步进度"}'
+## 6. coordinator 调度方式（事件驱动，无定时器）
+
+- **不要**为 coordinator 配置 cron / 定时器去定期 `git pull` 或扫仓。
+- coordinator **仅在**收到 **main** 的写作任务，或收到 **researcher / writer / reviewer** 的 `sessions_send` 完成通知后，才对项目仓执行 pull → 核对交付物 → 更新 `tasks/progress_log.md` / `memory/MEMORY.md` → commit → push → 按需通知下一角色。
 
 ---
 
@@ -246,16 +246,17 @@ openclaw cron add \
 ## 8. 执行顺序
 
 1. 阅读仓库 `agents/*.md` 了解各角色配置
-2. 按第 2 节创建四个智能体并克隆代码仓
+2. 按第 2 节注册四个智能体；**researcher / writer / reviewer** 可待 coordinator 下发 **repository_url + access_token** 后再在各自工作空间执行 `git clone`（或使用凭据更新已有 `multi-agent/` 远程）
 3. 为每个 Agent 生成 `SOUL.md / TOOLS.md / USER.md`
 4. 按第 3 节配置智能体间通信
 5. 重启 Gateway：`openclaw gateway restart`
+6. 由 **main** 向 **coordinator** 下达写作任务；**coordinator** 新建项目远程仓（自模板拷贝 + 初始化 `memory/*` 与 `tasks/*` + 首提交）并通知各协同智能体
 
 ---
 
 ## 9. 验收清单
 
-- [ ] 四个工作目录均存在，且各有独立 `multi-agent/` 克隆
+- [ ] 四个 Agent 工作目录均存在；**researcher / writer / reviewer** 在收到 coordinator 下发的 **repository_url** 后，各有独立 `multi-agent/` 克隆（**coordinator** 的 `multi-agent/` 在**首次接到 main 任务并建远程仓后**产生）
 - [ ] 每个目录下 **SOUL.md / TOOLS.md / USER.md** 与 `agents/<role>.md` 一致
 - [ ] 四个 Agent 均已 `openclaw agents add` 注册
 - [ ] 各角色预装 Skills 与 `agents/<role>.md` 列表一致
@@ -263,6 +264,9 @@ openclaw cron add \
 
 
 ## 10. 注意事项
-当完成上面验收清单后，你需要向用户提供以下信息：
-github的ACCESS_TOKEN，用于下载仓库、推送修改到代码仓。
+
+- 咨询用户提供代码托管平台的 ACCSESS_TOKEN 并提供给各协同智能体；禁止将 TOKEN 写入仓库内文件。
+- 每个写作项目对应 **coordinator 新建的独立远程仓**；访问凭据（如 GitHub **ACCESS_TOKEN**）由部署方安全保管，由 **coordinator** 在创建仓库后通过 **sessions_send** 分发给需要 clone/push 的协同智能体（**不得**写入 Git 跟踪文件）。
+- 本仓库为**模板**；运行时协作以 **coordinator 创建的项目仓**为准。
+
 

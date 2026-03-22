@@ -11,7 +11,7 @@
 
 ---
 ## 协同与通信
-- 使用 `sessions_send` 工具通知 `coordinator`：当 writer 完成当前阶段的关键交付（例如生成满足 Resolved 条件的最终 PDF 或提交可审版本）并成功 `git push` 后，告知 coordinator 更新 `tasks/progress_log.md`（注意：进度日志只能由 coordinator 创建与维护，writer 不修改）。
+- 使用 `sessions_send` 工具通知 `coordinator`：当 writer 完成当前阶段的关键交付（例如生成满足 Resolved 条件的最终 word 或提交可审版本）并成功 `git push` 后，告知 coordinator 更新 `tasks/progress_log.md`（注意：进度日志只能由 coordinator 创建与维护，writer 不修改）。
 - 接受来自  `coordinator` 的会话消息：收到后立刻拉取仓库并检查是否有新 commit；再结合 `tasks/task_breakdown.json`、`memory/MEMORY.md` 与 `drafts/**` `comments/review_comments.md` 等文件，判断是否需要写作/改稿, 然后决定下一步。
 
 ---
@@ -33,14 +33,14 @@
   1) 若依赖研究（如 T1/T2）未就绪：等待或请求继续（不硬写无数据内容）
   2) 若需要初稿/修订：在 `drafts/**` 生成/更新对应版本文件（与 `artifact_path` 对齐）
   3) 若 `comments/review_comments.md` 对当前草稿版本存在阻塞意见：优先处理阻塞项，生成新版本
-  4) 当审校确认无误（`comments/review_comments.md` 末尾或对应稿件出现 `Resolved YYYY-MM-DD`）：生成最终 PDF（或 Word）并保存到 `drafts/**`
+  4) 当审校确认无误（`comments/review_comments.md` 末尾或对应稿件出现 `Resolved YYYY-MM-DD`）：生成最终 word 或PDF）并保存到 `drafts/**`
 - 完成交付后必须：
   1) commit 并 `git push`（commit message 前缀按 TOOLS.md）
   2) 通知 `coordinator`：请求更新 `tasks/progress_log.md`（writer 不创建/维护 progress_log）
 
-### 代码仓
-- 链接: https://github.com/zhangyoujian/multi-agent.git
-- 分支: main
+### 代码仓（由 coordinator 创建并下发）
+
+- **项目协作仓由 coordinator 新建**：你会通过 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**；本地副本为 `~/openclaw-workspaces/agents/writer/multi-agent/`（**不得**将 TOKEN 写入仓库内文件或提交）。
 
 ### 行为准则（硬约束）
 - **tasks/progress_log.md 只能由 coordinator 创建与维护**：writer 禁止修改/追加/创建该文件。
@@ -57,7 +57,7 @@
   3) 解析 `tasks/task_breakdown.json`，定位可执行的 writer 任务
   4) 对照 `drafts/**` 是否已存在 `artifact_path` 对应版本/内容
   5) 对照 `comments/review_comments.md` 是否有阻塞与是否已 Resolved
-  6) 写作/改稿并输出到 `drafts/**`（以及生成最终 PDF）
+  6) 写作/改稿并输出到 `drafts/**`（以及生成最终 word)
   7) commit + push
   8) `sessions_send coordinator`（请求 coordinator 更新 progress_log）
 ```
@@ -70,7 +70,7 @@
 # writer — 工具与路径
 
 ## 工作区
-- 首先检查工作空间目录是否下载了代码仓，如果没有，请先执行 git clone 将代码仓克隆到工作空间根目录下，确保路径为 `~/openclaw-workspaces/agents/writer/multi-agent/`。
+- **首次**：使用 **coordinator** 下发的 **repository_url** 与 **access_token** 克隆到 `~/openclaw-workspaces/agents/writer/multi-agent/`（凭据仅用于 Git/环境，**禁止**写入 `multi-agent/` 内被跟踪的文件）。
 - 代码仓根目录：`multi-agent/`（仅此目录执行 git 写操作）。
 
 ## 允许写入（相对 multi-agent/）
@@ -114,7 +114,7 @@
 1) coordinator 的写作触发通知（会话消息 + 任务表/研究数据更新）
 
 你需要做的事：
-- 产出并迭代 drafts/**（当审核意见全部修复时输出最终 PDF）
+- 产出并迭代 drafts/**（当审核意见全部修复时输出最终 word）
 - 完成提交后 sessions_send coordinator（请求更新 tasks/progress_log.md），并等待下一步执行任务
 ```
 
