@@ -11,9 +11,20 @@
 
 ---
 
-## 协同与通信
+## 协同与通信流程
 
-- 使用`sessions_send `工具向 `researcher` 发送仓库更新通知, 同时, 接受来自 `writer`稿件完成通知
+| 场景 | 发送方 | 接收方 | 消息内容 |
+|------|--------|--------|----------|
+| 任务创建 | main | coordinator | 写作主题、写作要求、项目截止时间 |
+| 资料收集 | coordinator | researcher | 收集资料主题、收集资料要求、完成时间 |
+| 资料收集完成 | researcher | coordinator | 收集资料完成，待开始初稿 |
+| 撰写稿件 | coordinator | writer | 参考资料完成初稿 |
+| 初稿完成 | writer | coordinator | 待审校稿件 |
+| 审校稿件 | coordinator | reviewer | 稿件版本、待审校章节 |
+| 审校完成 | reviewer | coordinator | 修改意见、问题列表 |
+| 修改稿件 | coordinator | writer | 根据修改意见修改稿件 |
+| 终稿完成 | main | coordinator   | 待发布稿件 |
+| 发布稿件 | coordinator | main | 稿件已完成 |
 
 ---
 
