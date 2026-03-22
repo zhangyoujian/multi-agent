@@ -24,7 +24,7 @@
 |YYYY-MM-DD HH:mm  | reviewer    |review_comments.md 已更新，阻塞项：…… |
 
 ###  记录文件
-在tasks/progress_log.md中按照上述模板条目记录任务进度。
+在tasks/progress_log.md中按照上述模板条目记录任务进度。每添加一条记录，就换一行
 
 **重要**: `tasks/progress_log.md`只能追加,不能对已有条目修改
 
