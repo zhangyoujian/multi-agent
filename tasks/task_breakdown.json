@@ -1,7 +1,7 @@
 {
   "project": "2026年多模态大模型研究进展报告",
   "version": 1,
-  "updated_at": "2026-03-22T10:28:00+08:00",
+  "updated_at": "2026-03-22T10:42:00+08:00",
   "deadline": "2026-03-27",
   "subtasks": [
     {
@@ -9,7 +9,7 @@
       "title": "技术发展调研",
       "description": "调研2026年多模态大模型的技术发展现状，包括架构演进、训练方法、模型性能等",
       "owner_role": "researcher",
-      "status": "pending",
+      "status": "completed",
       "deps": [],
       "artifact_path": "research_data/technical_development.md"
     },
@@ -18,7 +18,7 @@
       "title": "关键突破调研",
       "description": "调研2026年多模态大模型领域的关键技术突破和创新点",
       "owner_role": "researcher",
-      "status": "pending",
+      "status": "completed",
       "deps": [],
       "artifact_path": "research_data/key_breakthroughs.md"
     },
@@ -27,7 +27,7 @@
       "title": "应用场景调研",
       "description": "调研2026年多模态大模型的主要应用场景和落地案例",
       "owner_role": "researcher",
-      "status": "pending",
+      "status": "completed",
       "deps": [],
       "artifact_path": "research_data/application_scenarios.md"
     },
@@ -36,7 +36,7 @@
       "title": "未来趋势调研",
       "description": "调研2026年多模态大模型的未来发展趋势和挑战",
       "owner_role": "researcher",
-      "status": "pending",
+      "status": "completed",
       "deps": [],
       "artifact_path": "research_data/future_trends.md"
     },
@@ -45,7 +45,7 @@
       "title": "撰写初稿",
       "description": "基于研究数据撰写报告初稿",
       "owner_role": "writer",
-      "status": "pending",
+      "status": "completed",
       "deps": ["T1", "T2", "T3", "T4"],
       "artifact_path": "drafts/report_v1.md"
     },
@@ -54,7 +54,7 @@
       "title": "审校反馈",
       "description": "对初稿进行审校并提出修改意见",
       "owner_role": "reviewer",
-      "status": "pending",
+      "status": "completed",
       "deps": ["T5"],
       "artifact_path": "comments/review_comments.md"
     },
@@ -63,7 +63,7 @@
       "title": "修订定稿",
       "description": "根据审校意见修订报告",
       "owner_role": "writer",
-      "status": "pending",
+      "status": "in_progress",
       "deps": ["T6"],
       "artifact_path": "drafts/report_final.md"
     }
