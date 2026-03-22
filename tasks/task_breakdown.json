@@ -1,7 +1,9 @@
 {
   "project": "2026年多模态大模型研究进展报告",
+  "version": 1,
+  "updated_at": "2026-03-22T10:28:00+08:00",
   "deadline": "2026-03-27",
-  "tasks": [
+  "subtasks": [
     {
       "id": "T1",
       "title": "技术发展调研",
