@@ -40,6 +40,12 @@ openclaw agents add coordinator
 #    - TOOLS.md: 定义工具权限和可操作路径
 #    - USER.md: 定义用户上下文和协作关系
 
+其他智能体创建创建流程参考上面
+openclaw agents add researcher
+openclaw agents add writer
+openclaw agents add reviewer
+
+
 ```
 
 ### 2.3 预装技能
