@@ -9,6 +9,7 @@
 1. **单一真相源**：每个角色的完整参数以 `./agents/<role>.md` 为准（`coordinator.md`、`researcher.md`、`writer.md`、`reviewer.md`）。
 2. **目录隔离**：Agent 私有文件（SOUL/TOOLS/USER、私有 `memory/`、私有 `skills/`）**不得**写入仓库克隆目录；
 3. **提交前缀**：各 Agent 在新代码仓 `<repo_name>/` git commit信息 必须以 `[coordinator]` / `[researcher]` / `[writer]` / `[reviewer]` 开头（与对应文件一致）。
+4. **写作任务门禁（强约束）**：在用户**尚未明确提出写作需求**前，`main` **严格禁止**向 `coordinator` 发送 `writing_task`（或等价写作任务消息）。
 ---
 
 ## 2. OpenClaw 注册 Agent 步骤
@@ -127,6 +128,7 @@ OpenClaw 提供以下工具实现智能体间通信：
 **main 通知 coordinator 下达写作任务（同时分发仓库凭据）：**
 
 ```python
+# 前置条件：用户已明确提出写作需求
 sessions_send(
     sessionKey="agent:coordinator:main",
     message='{"kind":"writing_task","project_id":"<project_id>","repo_name":"<repo_name>","repository_url":"<repo_url>","access_token":"<access_token>","default_branch":"main","theme":"<topic>","requirements":"<requirements>","deadline":"<deadline>"}'
@@ -232,6 +234,7 @@ writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认
 - 提交信息不带 **正确 `[角色名]`** 前缀
 - 未经授权删除或覆盖他人已提交的文件
 - 禁止各角色违背`3.4 通信权限约束` 和 `5.3 消息通知规范` 彼此发送消息
+- **用户未提出写作需求时，禁止 `main` 给 `coordinator` 下达写作任务**
 ---
 
 ## 8. 执行顺序
@@ -242,8 +245,9 @@ writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认
 4. 按第 3 节配置智能体间通信
 5. 重启 Gateway：`openclaw gateway restart`
 6. 用户提供 `ACCESS_TOKEN` 与仓库名称 `repo_name`；由 **main** 先创建空远程项目仓，再检查本地是否已有 `https://github.com/zhangyoujian/multi-agent.git`（无则 `git clone`），并将 `multi-agent/*` 全量拷贝到新仓，初始化提交后推送
-7. 当 **main** 收到写作需求时，向 **coordinator** 下发写作任务与仓库凭据（`repository_url + access_token`）
-8. coordinator 将仓库凭据转发给 researcher / writer / reviewer，并在项目仓内生成 `tasks/task_breakdown.json` 与 `tasks/progress_log.md` 启动协作流水线
+7. 用户**未提出写作需求前**，`main` 仅允许完成建仓与模板拷贝初始化，**禁止**向 coordinator 下发写作任务
+8. 当 **main** 收到写作需求时，向 **coordinator** 下发写作任务与仓库凭据（`repository_url + access_token`）
+9. coordinator 将仓库凭据转发给 researcher / writer / reviewer，并在项目仓内生成 `tasks/task_breakdown.json` 与 `tasks/progress_log.md` 启动协作流水线
 
 ---
 
