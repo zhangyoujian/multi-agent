@@ -265,7 +265,8 @@ writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认
 
 ## 10. 注意事项
 
-- 咨询用户提供代码托管平台的 ACCSESS_TOKEN 并提供给各协同智能体；禁止将 TOKEN 写入仓库内文件。
+- 引导用户提供代码托管平台的 ACCSESS_TOKEN 并提供给各协同智能体；禁止将 TOKEN 写入仓库内文件。
+- 引导用户提供新建仓库的英文名称。
 - 每个写作项目对应 **coordinator 新建的独立远程仓**；访问凭据（如 GitHub **ACCESS_TOKEN**）由部署方安全保管，由 **coordinator** 在创建仓库后通过 **sessions_send** 分发给需要 clone/push 的协同智能体（**不得**写入 Git 跟踪文件）。
 - 本仓库为**模板**；运行时协作以 **coordinator 创建的项目仓**为准。
 
