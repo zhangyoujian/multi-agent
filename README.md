@@ -17,7 +17,7 @@
 
 ## 协作流水线
 
-协作开始前：用户先提供 `ACCESS_TOKEN` 与仓库名称 `repo_name`。随后 **main** 先创建空远程项目仓，再下载当前模板仓并把模板文件完整拷贝到新仓，初始化提交后推送。
+协作开始前：引导用户先提供 `ACCESS_TOKEN` 与仓库名称 `repo_name`。随后 **main** 先创建空远程项目仓，再检查本地是否已有模板仓 `https://github.com/zhangyoujian/multi-agent.git`（无则 `git clone`），并将 `multi-agent/*` 全量拷贝到新仓，初始化提交后推送。
 
 当 **main** 收到写作需求后：先把 **仓库地址与访问 TOKEN** 下发给 **coordinator**，再由 **coordinator** 转发给 **researcher / writer / reviewer**。之后：**coordinator** 拆解任务并推送 → **researcher** 补充研究材料 → **writer** 撰写/迭代 → **reviewer** 审校并反馈 → **writer** 修订 → **coordinator** 确认完成并发布。
 

@@ -17,7 +17,7 @@
 ## 项目背景（与本仓库关系）
 
 - **本仓库**（你当前看到的 `multi-agent` 模板工程）是**协同写作脚手架**：目录约定、`agents/`、`tasks/` 说明、`memory/` 说明、`drafts/`、`research_data/`、`comments/` 等。
-- **实际协作时**：由 **main 在创建协同智能体后**接收用户提供的 `ACCESS_TOKEN` 与仓库名称 `<repo_name>`，先创建空远程仓，再下载模板仓并将模板文件完整拷贝到新仓，完成初始化提交与推送。随后当 main 接收到写作需求时，再把该项目仓的 `repository_url + access_token` 下发给 coordinator；coordinator 再把凭据分发给 researcher / writer / reviewer。只有在写作任务到达后，coordinator 才在同一项目仓里生成/更新 `tasks/task_breakdown.json`、`tasks/progress_log.md` 与 `memory/MEMORY.md` 并推进协作。
+- **实际协作时**：由 **main 在创建协同智能体后**接收用户提供的 `ACCESS_TOKEN` 与仓库名称 `<repo_name>`，先创建空远程仓；然后检查本地是否已有模板仓 `https://github.com/zhangyoujian/multi-agent.git`（无则 `git clone`），再将模板仓 `multi-agent/*` 全量拷贝到新仓并完成初始化提交与推送。随后当 main 接收到写作需求时，再把该项目仓的 `repository_url + access_token` 下发给 coordinator；coordinator 再把凭据分发给 researcher / writer / reviewer。只有在写作任务到达后，coordinator 才在同一项目仓里生成/更新 `tasks/task_breakdown.json`、`tasks/progress_log.md` 与 `memory/MEMORY.md` 并推进协作。
 
 ---
 
@@ -25,7 +25,7 @@
 
 | 场景 | 发送方 | 接收方 | 要点 |
 |------|--------|--------|------|
-| 仓库创建与初始化 | 用户输入 + main | 远程托管平台 | 用户提供 `ACCESS_TOKEN` 与 `<repo_name>`；main 先创建空远程仓，再下载模板仓并完整拷贝所有文件，初始化提交后推送 |
+| 仓库创建与初始化 | 用户输入 + main | 远程托管平台 | 用户提供 `ACCESS_TOKEN` 与 `<repo_name>`；main 先创建远程仓，完成初始化提交推送 |
 | 写作任务下达与凭据下发 | main | coordinator | 写作主题、要求、截止、`project_id/repo_name`、**repository_url**、**access_token**、`default_branch` |
 | 协作凭据转发 | coordinator | researcher / writer / reviewer | **repository_url**、**access_token**（或等价凭据引用）、`default_branch`、`project_id` |
 | 写作任务下达 | main | coordinator | 主题、要求、截止、以及与本轮项目对应的 `project_id` / repo_name |
