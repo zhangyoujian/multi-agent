@@ -41,7 +41,7 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **项目协作仓由 coordinator 新建**：你会通过 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**；本地副本为 `~/openclaw-workspaces/agents/writer/<repo_name>/`（**不得**将 TOKEN 写入仓库内文件或提交, repo_name是代码仓的实际名称）。
+- **项目协作仓由 main 创建并初始化**：你会通过 coordinator 的 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**；本地副本为 `~/openclaw-workspaces/agents/writer/<repo_name>/`（**不得**将 TOKEN 写入仓库内文件或提交, repo_name是代码仓的实际名称）。
 
 ### 行为准则（硬约束）
 - **tasks/progress_log.md 只能由 coordinator 创建与维护**：writer 禁止修改/追加/创建该文件。

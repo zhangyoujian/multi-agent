@@ -48,7 +48,7 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **项目协作仓不是固定模板 URL**：由 **coordinator** 在接到 main 的 `create_repo` 请求后新建/导入远程仓，并将 **repository_url**、**access_token**（或等价凭据）、**default_branch** 通过 `sessions_send` 发给你。
+- **项目协作仓不是固定模板 URL**：由 **main** 创建并初始化远程仓，写作任务下达时先把 **repository_url**、**access_token**（或等价凭据）、**default_branch** 发给 coordinator，再由 coordinator 通过 `sessions_send` 发给你。
 - 你本地工作副本目录仍为：`~/openclaw-workspaces/agents/researcher/<repo_name>/`（首次用 coordinator 提供的地址与凭据执行 `git clone`；**不得**将 TOKEN 写入仓库内任何文件或提交进 Git）。
 - 分支：以 coordinator 下发的 **default_branch** 为准（通常为 `main`）。
 

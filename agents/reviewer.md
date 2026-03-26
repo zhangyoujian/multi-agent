@@ -51,7 +51,7 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **repository_url**、**access_token**、**default_branch** 由 **coordinator** 在新建项目仓后通过 `sessions_send` 下发；
+- **repository_url**、**access_token**、**default_branch** 由 **main** 在写作任务下达时先发给 coordinator，再由 coordinator 通过 `sessions_send` 下发；
 - 本地副本为 `~/openclaw-workspaces/agents/reviewer/<repo_name>/`（**禁止**将 TOKEN 写入仓库文件或提交）。
 
 ### 产出
