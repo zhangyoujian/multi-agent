@@ -69,6 +69,7 @@ OpenClaw 提供以下工具实现智能体间通信：
 ### 3.2 配置示例
 
 在 `openclaw.json` 中配置多智能体：
+** 重要 **: 务必配置会话超时时间，设置timeoutSeconds为600秒，以防止会话过期。
 
 ```json
 {
@@ -268,6 +269,7 @@ writer 撰写初稿 → reviewer 审校 → writer 修订 → coordinator 确认
 - [ ] 各角色预装 Skills 与 `agents/<role>.md` 列表一致
 - [ ] `sessions_send` 工具可用
 - [ ] `coordinator`与**researcher / writer / reviewer**等智能体之间通信正常
+- [ ] 智能体会话超时时间是否配置成600
 
 
 ## 10. 注意事项

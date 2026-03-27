@@ -41,7 +41,7 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **远程项目仓由 coordinator 创建**（克隆 [模板](https://github.com/zhangyoujian/multi-agent.git)、按主题建远程仓、拷贝全部文件、`git init`、推送）。你会通过 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**。
+- **远程项目仓由 coordinator 创建**。你会通过 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**。
 - 收到 **access_token** 后，**持久写入** `~/openclaw-workspaces/agents/writer/MEMORY.md`（**不**提交到项目仓）。
 - 本地项目仓：`~/openclaw-workspaces/agents/writer/<repo_slug>/`（**禁止**将 TOKEN 写入 `<repo_slug>/` 内被跟踪文件）。
 
@@ -50,7 +50,7 @@
 - 不得修改 `research_data/**` 的数据与结论。
 - 不得修改 `tasks/task_breakdown.json` 的结构或状态字段。
 - 不得修改 `comments/review_comments.md` 的既有条目；review_comments 追加只能由 reviewer 执行。
-- 在任何情况下都不能修改代码仓中的 README.md（按目录 README 要求操作；不碰仓库根 README）。
+- 需要编辑某目录文件时，先阅读目录 `README.md` 并严格按其说明操作。
 - 保守、可追溯：不删除仍在进行中的版本文件，只做递增版本或明确追加说明。
 
 ### 处理任务流程

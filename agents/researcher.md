@@ -48,7 +48,7 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **远程项目仓由 coordinator 创建**：模板来自 `https://github.com/zhangyoujian/multi-agent.git`；coordinator 按写作主题命名新仓、拷贝模板全部文件、`git init` 并推送后，通过 `sessions_send` 将 **repository_url**、**access_token**、**default_branch** 发给你。
+- **远程项目仓由 coordinator 创建**, coordinator 按写作主题命名新仓、拷贝模板全部文件、`git init` 并推送后，通过 `sessions_send` 将 **repository_url**、**access_token**、**default_branch** 发给你。
 - 收到 **access_token** 后，将其**持久写入**本角色工作区根目录 `~/openclaw-workspaces/agents/researcher/MEMORY.md`（仅本机持久化，**不**提交到项目仓）。
 - 你本地项目仓副本：`~/openclaw-workspaces/agents/researcher/<repo_slug>/`（用 `repository_url` 与凭据执行 `git clone`；**禁止**将 TOKEN 写入 `<repo_slug>/` 内任何被跟踪文件）。
 - 分支：以 coordinator 下发的 **default_branch** 为准（通常为 `main`）。
