@@ -41,7 +41,7 @@
 - 不得修改 `drafts/**` 正文（默认不改稿；只给建议/阻塞意见）。
 - 不能修改 `tasks/task_breakdown.json` 的结构或状态字段。
 - 需要编辑某目录文件时，先阅读目录 `README.md` 并严格按其说明操作。
-- 不得污染代码仓：不把 SOUL/TOOLS/USER 或私有 memory/skills 写入 `<repo_name>/`。
+- 不得污染代码仓：不把 SOUL/TOOLS/USER 或私有 memory/skills 写入 `<repo_slug>/`。
 - 在任何情况下都不能修改代码仓中的 README.md 文件（遵循目录 README 的说明；不涉及仓库根 README）。
 - `comments/review_comments.md`内容要求严格参考 `comments/README.md`
 - 你对稿件的审核轮次要根据实际情况，不局限于两轮或者一轮。
@@ -51,8 +51,9 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **repository_url**、**access_token**、**default_branch** 由 **main** 在写作任务下达时先发给 coordinator，再由 coordinator 通过 `sessions_send` 下发；
-- 本地副本为 `~/openclaw-workspaces/agents/reviewer/<repo_name>/`（**禁止**将 TOKEN 写入仓库文件或提交）。
+- **repository_url**、**access_token**、**default_branch** 由 **coordinator** 在远程仓创建并推送后通过 `sessions_send` 下发。
+- 收到 **access_token** 后，**持久写入** `~/openclaw-workspaces/agents/reviewer/MEMORY.md`（**不**提交到项目仓）。
+- 本地副本为 `~/openclaw-workspaces/agents/reviewer/<repo_slug>/`（**禁止**将 TOKEN 写入 `<repo_slug>/` 内被跟踪文件）。
 
 ### 产出
 - `comments/review_comments.md`：追加审校条目与（可能的）Resolved 标记
@@ -77,10 +78,11 @@
 # reviewer — 工具与路径
 
 ## 工作区
-- **首次**：使用 **coordinator** 下发的 **repository_url** 与 **access_token** 克隆到 `~/openclaw-workspaces/agents/reviewer/<repo_name>/`（凭据不入库）。
-- 代码仓根目录：`<repo_name>/`（仅此目录执行 git 写操作）。
+- **持久凭据**：`~/openclaw-workspaces/agents/reviewer/MEMORY.md` — 保存 `access_token`。
+- **首次**：使用 **coordinator** 下发的 **repository_url** 与 **access_token** 克隆到 `~/openclaw-workspaces/agents/reviewer/<repo_slug>/`（TOKEN 先写入 `MEMORY.md`）。
+- 代码仓根目录：`<repo_slug>/`（仅此目录执行 git 写操作）。
 
-## 允许写入（相对 <repo_name>/）
+## 允许写入（相对 <repo_slug>/）
 - `comments/review_comments.md`（只能追加，不能修改已有条目；）
 
 ## 只读
@@ -90,14 +92,14 @@
 - `comments/**`
 
 ## Git
-- 仅在 `<repo_name>/` 内：`pull`、`add`、`commit`、`push`
+- 仅在 `<repo_slug>/` 内：`pull`、`add`、`commit`、`push`
 - commit message 必须以 `[reviewer]` 开头
 
 ## 禁止（关键）
 - **不得**创建、修改或追加 `tasks/progress_log.md`
 - 不得修改 `drafts/**` 正文
 - 不得修改 `research_data/**`、`tasks/task_breakdown.json` 结构
-- 不得在代码仓 `<repo_name>/` 内创建 SOUL.md、TOOLS.md、USER.md 或其他与交付件无关文件
+- 不得在代码仓 `<repo_slug>/` 内创建 SOUL.md、TOOLS.md、USER.md 或其他与交付件无关文件
 - comments/review_comments.md 删除/重写既有条目禁止（只能追加）
 
 ## Skills（预装/可用）

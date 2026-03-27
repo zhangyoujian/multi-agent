@@ -1,6 +1,6 @@
 # multi-agent
 
-基于 **OpenClaw** 的 **Git 驱动异步协同写作** 模板仓库：将任务拆解、研究、撰稿、审校拆成角色化智能体，通过同一 Git 仓库中的约定目录与通知文件协作，产出可追溯、可审计的报告类文稿（含 Markdown 与最终 PDF 等）。
+基于 **OpenClaw** 的 **Git 驱动异步协同写作** 模板仓库：将任务拆解、研究、撰稿、审校拆成角色化智能体，通过同一 Git 仓库中的约定目录与通知文件协作，产出可追溯、可审计的报告类文稿（含 Markdown 与最终 word 等）。
 
 ## 目录组织
 
@@ -17,13 +17,16 @@
 
 ## 协作流水线
 
-协作开始前：引导用户先提供 `ACCESS_TOKEN` 与仓库名称 `repo_name`。随后 **main** 先创建空远程项目仓，再检查本地是否已有模板仓 `https://github.com/zhangyoujian/multi-agent.git`（无则 `git clone`），并将 `multi-agent/*` 全量拷贝到新仓，初始化提交后推送。
+1. 使用 `openclaw agents add` 创建 **coordinator / researcher / writer / reviewer** 等独立智能体（不用子代理）。
+2. **main** 引导用户提供代码托管 **`ACCESS_TOKEN`**，并通过会话消息发给 **coordinator**；coordinator 将 TOKEN **持久写入**本机工作区 `MEMORY.md`（**不**提交到项目仓）。
+3. 用户**明确提出写作需求**后，**main** 向 **coordinator** 下达写作任务（无写作需求前**禁止**下达，见 `docs/INSTRUCTION.md`）。
+4. **coordinator** 从模板 [zhangyoujian/multi-agent](https://github.com/zhangyoujian/multi-agent.git) **克隆**脚手架，在托管平台**新建**与主题相关的远程仓，将模板**全部文件**拷贝到新仓目录，**`git init`** 后**推送**；再生成 `tasks/*`、协作用 `memory/MEMORY.md`，并把 **`repository_url` + `access_token`** 转发给 **researcher / writer / reviewer**。
+5. 各协同智能体将收到的 TOKEN 写入**各自工作区** `~/openclaw-workspaces/agents/<role>/MEMORY.md`，再克隆项目仓协作。
+6. 之后：**coordinator** 拆解任务并推送 → **researcher** 补充研究材料 → **writer** 撰写/迭代 → **reviewer** 审校并反馈 → **writer** 修订 → **coordinator** 确认完成并发布。
 
-当 **main** 收到写作需求后：先把 **仓库地址与访问 TOKEN** 下发给 **coordinator**，再由 **coordinator** 转发给 **researcher / writer / reviewer**。之后：**coordinator** 拆解任务并推送 → **researcher** 补充研究材料 → **writer** 撰写/迭代 → **reviewer** 审校并反馈 → **writer** 修订 → **coordinator** 确认完成并发布。
+各角色在各自 OpenClaw 工作空间中持有**独立克隆的同一项目仓**副本，通过 **git add、push、pull** 协作；提交信息使用 **`[角色名]`** 前缀便于审计。**coordinator** 仅在收到 main 或其他智能体的通知后更新进度与推送。
 
-各角色在各自 OpenClaw 工作空间中持有**独立克隆的同一项目仓**副本，通过 **git add、push、pull** 协作；提交信息使用 **`[角色名]`** 前缀便于审计。**coordinator 不使用定时器**定期扫仓，仅在收到其他智能体或 main 的通知后更新进度与推送。
-
-> 本 GitHub/Git 上的 **multi-agent 仓库**是**脚手架模板**；实际交付写作发生在 **main 为每次任务创建并初始化的项目仓**中。
+> 本 GitHub 上的 **multi-agent** 仓库是**脚手架模板**（[zhangyoujian/multi-agent](https://github.com/zhangyoujian/multi-agent.git)）；实际交付写作发生在 **coordinator 为每次写作任务创建并推送的项目仓**中。
 
 ## 文档索引
 

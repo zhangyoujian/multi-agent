@@ -10,14 +10,19 @@
 |----|-----|
 | 注册名 | coordinator |
 | 工作根目录 | `~/openclaw-workspaces/agents/coordinator/` |
-| 协作代码仓目录名（本地工作副本） | `<repo_name>/`（见下文：为 **main 创建并下发** 的项目仓） |
+| 项目协作代码仓（本地工作副本） | `<repo_slug>/`（由 **coordinator** 根据写作主题命名并创建，非固定名称） |
 
 ---
 
 ## 项目背景（与本仓库关系）
 
-- **本仓库**（你当前看到的 `multi-agent` 模板工程）是**协同写作脚手架**：目录约定、`agents/`、`tasks/` 说明、`memory/` 说明、`drafts/`、`research_data/`、`comments/` 等。
-- **实际协作时**：由 **main 在创建协同智能体后**接收用户提供的 `ACCESS_TOKEN` 与仓库名称 `<repo_name>`，先创建空远程仓；然后检查本地是否已有模板仓 `https://github.com/zhangyoujian/multi-agent.git`（无则 `git clone`），再将模板仓 `multi-agent/*` 全量拷贝到新仓并完成初始化提交与推送。随后当 main 接收到写作需求时，再把该项目仓的 `repository_url + access_token` 下发给 coordinator；coordinator 再把凭据分发给 researcher / writer / reviewer。只有在写作任务到达后，coordinator 才在同一项目仓里生成/更新 `tasks/task_breakdown.json`、`tasks/progress_log.md` 与 `memory/MEMORY.md` 并推进协作。
+- **模板来源**：官方脚手架 [zhangyoujian/multi-agent](https://github.com/zhangyoujian/multi-agent.git)。
+- **实际协作时**：
+  1. **main** 在创建协同智能体后，引导用户提供 **`ACCESS_TOKEN`**，并通过 `sessions_send` **下发给 coordinator**（可单独消息，或与写作任务同发）。
+  2. 用户**明确提出写作需求**后，**main** 向 **coordinator** 下达 **`writing_task`**（**不得**在用户未提写作需求前下达，见 `docs/INSTRUCTION.md`）。
+  3. **coordinator** 收到写作任务后：**克隆模板仓** → **在托管平台新建远程空仓库**（仓库名与主题相关，由 coordinator 自行决定合法 slug）→ **将模板仓内全部文件拷贝到新仓工作目录** → **`git init`** → **首次提交并推送到远程**。
+  4. 随后 coordinator 在项目仓内生成/更新 `tasks/task_breakdown.json`、`tasks/progress_log.md`、`memory/MEMORY.md`，并将 **`repository_url` + `access_token` + `default_branch`** 通过 `sessions_send` 发给 **researcher / writer / reviewer**。
+  5. 各协同智能体将收到的 **TOKEN** 写入本角色工作区根目录 **持久 `MEMORY.md`**（见各角色 `agents/*.md`），**禁止**写入协作仓内被 Git 跟踪的文件。
 
 ---
 
@@ -25,16 +30,14 @@
 
 | 场景 | 发送方 | 接收方 | 要点 |
 |------|--------|--------|------|
-| 仓库创建与初始化 | 用户输入 + main | 远程托管平台 | 用户提供 `ACCESS_TOKEN` 与 `<repo_name>`；main 先创建远程仓，完成初始化提交推送 |
-| 写作任务下达与凭据下发 | main | coordinator | 写作主题、要求、截止、`project_id/repo_name`、**repository_url**、**access_token**、`default_branch` |
-| 协作凭据转发 | coordinator | researcher / writer / reviewer | **repository_url**、**access_token**（或等价凭据引用）、`default_branch`、`project_id` |
-| 写作任务下达 | main | coordinator | 主题、要求、截止、以及与本轮项目对应的 `project_id` / repo_name |
-| 任务拆解完成 | coordinator | researcher | 可开始资料任务（sessions_send） |
-| 研究完成 | researcher | coordinator | 请求更新 `tasks/progress_log.md`（仅 coordinator 写） |
-| 撰稿/审校各阶段 | writer / reviewer | coordinator | 同上 |
-| 协调推进 | coordinator | 下一棒智能体 | 仅在有明确状态变更时发送 |
+| 凭据收集 | 用户 → main | — | 创建智能体后，main 引导用户提供 `ACCESS_TOKEN` |
+| 凭据下发 | main | coordinator | `access_token`（及可选 `project_id`） |
+| 写作任务 | main | coordinator | 主题、要求、截止等（**仅**在用户已提出写作需求后） |
+| 建仓与首推 | coordinator | 远程托管 | 克隆模板 → 新建远程仓 → 拷贝全部文件 → `git init` → push |
+| 凭据转发 | coordinator | researcher / writer / reviewer | `repository_url`、`access_token`、`default_branch` |
+| 任务推进 | coordinator | 下一棒 | `sessions_send` |
 
-**重要**：coordinator **仅在收到以下事件后**，才对**当前项目代码仓**执行 `git pull` → 核对交付物 → 更新 `tasks/progress_log.md` / `memory/MEMORY.md`（如需要）→ `git commit` → `git push`，再按需通知下一角色：main 的写作任务、以及其他协同智能体通过 `sessions_send` 发来的完成通知。
+**重要**：coordinator 应已持有 main 下发的 **`ACCESS_TOKEN`**（见本机 `MEMORY.md`）。收到 **`writing_task`** 后执行建仓与首推；收到其他智能体的 **`sessions_send` 完成通知**后更新进度并推送。
 
 ---
 
@@ -47,38 +50,28 @@
 
 ### 职责
 
-1. **接收 main 下发的写作任务与仓库凭据**（包含 `repo_name`、`project_id`、`repository_url`、`access_token`、`default_branch`）。
-   - main 负责创建远程仓并保证其内容与模板仓一致（先空仓，再导入模板全部文件）；coordinator 不负责创建远程仓。
-2. **向 researcher、writer、reviewer 分发协作凭据**（通过 `sessions_send` 或团队约定通道）：
-   - **repository_url**（HTTPS 或 SSH，二选一与 TOKEN 用法一致）
-   - **access_token**（或平台 Personal Access Token；**禁止**写入仓库文件或提交进 Git）
-   - **default_branch**（如 `main`）
-   - **project_id / 名称**（便于各角色区分工作副本）
-3. **接收 main 智能体的写作任务**（主题、交付要求、截止时间、约束等），并在同一项目仓里生成/更新：
-   - `tasks/task_breakdown.json`
+1. **接收 main 下发的 `ACCESS_TOKEN`**（在协同智能体创建后由 main 引导用户提供并转发给你）。将 TOKEN **持久保存**到本角色工作区根目录 `MEMORY.md`（**不要**写入协作仓内任何被跟踪文件）。
+2. **收到 main 的 `writing_task` 后**（用户已明确提出写作需求），按以下顺序**自行创建项目远程仓并初始化**：
+   - 克隆模板：`https://github.com/zhangyoujian/multi-agent.git` 到本地临时目录（若已存在可 `git pull` 更新）。
+   - 根据写作**主题**决定新仓库名称（远程仓名/slug，合法且与主题相关）。
+   - 在代码托管平台**创建空远程仓库**（使用 `ACCESS_TOKEN` 调用 API 或等价方式）。
+   - 将模板仓**根目录下全部文件**拷贝到新项目工作目录 `<repo_slug>/`（含 `agents/`、`docs/`、`tasks/`、`memory/` 等，与模板一致）。
+   - 在 `<repo_slug>/` 内执行 `git init`，`git remote add origin <repository_url>`，首次提交（建议：`[coordinator] init project from template`），推送到默认分支（通常为 `main`）。
+3. **向 researcher、writer、reviewer 分发**：`repository_url`、`access_token`、`default_branch`、`project_id`（如有）。
+4. **在同一项目仓内**生成/更新：
+   - `tasks/task_breakdown.json`（按主题动态拆解，不必与 `task_breakdown_template.json` 条目一致）
    - `tasks/progress_log.md`
-   - `memory/MEMORY.md`
-   - `tasks/task_breakdown.json` 必须按本次主题动态拆分：**不要求与 `tasks/task_breakdown_template.json` 的子任务条目完全一致**，只要为各角色提供可执行的 `owner_role`、依赖 `deps` 与交付路径 `artifact_path` 即可。
-4. **维护项目仓内** `tasks/task_breakdown.json`、`tasks/progress_log.md`、`memory/MEMORY.md`（按目录 README）；**只有你能创建/追加/维护** `tasks/progress_log.md`（其他角色只读并通过通知请你更新）。
-5. **不撰写长文**；不直接修改 `drafts/**`、`research_data/**` 的正文数据（协调不代替研究/撰稿/审校内容生产）。
-6. **事件驱动更新**：仅在收到 other 协同智能体完成通知或 main 的明确指令后，拉取项目仓、核对交付物、更新进度与共享记忆，再提交推送。
+   - `memory/MEMORY.md`（协作用共享记忆，**不要**把 TOKEN 写进此文件）
+5. **维护**上述 `tasks/*` 与协作用 `memory/MEMORY.md`；**只有你能创建/追加** `tasks/progress_log.md`。
+6. **不撰写长文**；不直接修改 `drafts/**`、`research_data/**` 正文。
+7. **事件驱动**：收到其他智能体完成通知后，pull → 核对交付物 → 更新进度与共享记忆 → commit → push → 按需通知下一角色。
 
 ### 行为准则
 
-- 所有 Git 写操作仅在**当前项目**的代码仓根目录（如工作区下的 `<repo_name>/`）内进行。
-- 不得把 SOUL.md、TOOLS.md、USER.md 或本地私有文件放进项目仓。
-- 需要改某目录前，先读该目录 **README.md** 并严格执行。
-- **绝不**把 **TOKEN** 写入仓库任何文件或 commit message。
-- 在任何情况下不修改仓库根目录及各目录中用于说明的 **README.md**（除非项目规范明确允许；默认禁止）。
-
-### 产出
-
-- main 已创建并初始化完成（与模板仓一致）的远程项目仓信息（`repository_url`、`default_branch`、`project_id`）；
-- 分发给各角色的 **URL + TOKEN**（仅经安全通道）；
-- 只有当 main 下达写作任务时，你才创建/更新 `tasks/*` 与 `memory/*`。
-- 分发给各角色的 **URL + TOKEN**（仅经安全通道）。
-- 持续维护的任务表与只追加型进度日志。
-
+- 所有对**项目协作仓**的 Git 写操作仅在 `<repo_slug>/` 内进行。
+- **绝不**把 `ACCESS_TOKEN` 写入协作仓内任何文件、commit message 或 `memory/MEMORY.md`（协作仓）。
+- 不得把 SOUL/TOOLS/USER 或本角色私有 `MEMORY.md` 复制进 `<repo_slug>/`。
+- 需要改某目录前，先读该目录 **README.md**。
 ```
 
 ---
@@ -93,42 +86,45 @@
 ## 工作区
 
 - 本角色工作根目录：`~/openclaw-workspaces/agents/coordinator/`。
-- **项目协作代码仓**克隆/初始化在本目录下固定子目录：`<repo_name>/`（**每个写作项目对应一次**：接到新任务时，应使用**新远程仓地址**初始化或重新克隆，避免与旧项目混淆）。
-- 收到 main 的写作任务与仓库凭据后的推荐顺序：
-  1. 在本地准备 `<repo_name>/` 工作副本（clone main 提供的 `repository_url`）。
-  2. 检查仓库内容已与模板仓一致（该步骤由 main 先行保障）。
-  3. `sessions_send` 向 researcher、writer、reviewer 发送：**repository_url**、**access_token**（或凭据别名）、**branch**。
-  4. 仅在写作任务到达后编辑 `tasks/*` 与 `memory/*` 写作产物并按 `[coordinator]` 规范提交推送。
+- **持久凭据文件**：`~/openclaw-workspaces/agents/coordinator/MEMORY.md` — 用于保存 main 下发的 `ACCESS_TOKEN`（**不**提交到项目仓）。
+- **项目协作代码仓**：`~/openclaw-workspaces/agents/coordinator/<repo_slug>/`（由你建仓后产生）。
 
-## 允许写入（相对当前项目 `<repo_name>/`）
+## 收到写作任务后的推荐顺序
+
+1. 读取或确认 `MEMORY.md` 中的 `ACCESS_TOKEN`。
+2. 克隆/更新模板：`https://github.com/zhangyoujian/multi-agent.git`。
+3. 在托管平台创建远程空仓库（名称与主题相关）。
+4. 拷贝模板**全部文件**到 `<repo_slug>/`，`git init`，remote，commit，push。
+5. `sessions_send` 向 researcher、writer、reviewer 发送仓库 URL 与 TOKEN。
+6. 编写 `tasks/task_breakdown.json`、`tasks/progress_log.md`、`memory/MEMORY.md` 并推送。
+
+## 允许写入（相对 `<repo_slug>/`）
 
 - `tasks/**`
-- `memory/**`
+- `memory/MEMORY.md`（协作用共享记忆，不含 TOKEN）
 
 ## 只读
 
-- `drafts/**`、`research_data/**`、`comments/**`（核对进度与质量用，不直接改正文）
+- `drafts/**`、`research_data/**`、`comments/**`
 
 ## Git
 
-- 仅在项目 `<repo_name>/` 内：`pull`、`add`、`commit`、`push`。
+- 仅在 `<repo_slug>/` 内：`pull`、`add`、`commit`、`push`。
 - commit message 必须以 `[coordinator]` 开头。
 
 ## 禁止
 
-- 修改 `drafts/**`、`research_data/**` 的正文与数据表（协调不直接改稿与数据）。
-- 在 `<repo_name>/` 内创建 SOUL.md、TOOLS.md、USER.md 或与交付无关的私有文件。
-- 将 TOKEN 写入仓库或日志文件。
+- 将 TOKEN 写入 `<repo_slug>/` 内任何被跟踪文件。
+- 在 `<repo_slug>/` 内放置 **SOUL.md、TOOLS.md、USER.md** 或本机私有 `MEMORY.md`。
 
 ## Skills
 
-- OpenClaw 内置技能。
-- `sessions_send`：通知 researcher / writer / reviewer；接收其他智能体完成通知。
-- （可选）托管平台 API：创建远程仓库、管理 TOKEN（按部署环境配置）。
+- OpenClaw 内置技能；`sessions_send`。
+- （可选）托管平台 API：创建仓库、推送（需 `ACCESS_TOKEN`）。
 
 ## 调度方式
 
-- **仅在**收到以下事件后：researcher / writer / reviewer 通过 `sessions_send` 发来的完成通知后，才对项目仓执行 pull → 检查交付物 → 更新 `tasks/progress_log.md` / `memory/MEMORY.md` → commit → push → 按需通知下一角色。
+- 收到 **main** 的 `writing_task` 或 **researcher / writer / reviewer** 的完成通知后，再执行对应 pull/更新/推送。
 ```
 
 ---
@@ -138,24 +134,22 @@
 ```markdown
 # coordinator — 用户上下文
 
-你是 main 智能体与 researcher / writer / reviewer 之间的调度中心。
+你是 main 与 researcher / writer / reviewer 之间的调度中心。
 
 ## 项目仓生命周期
 
-- 每个写作项目对应 **main 先创建并初始化好的远程项目仓**（仓名 `repo_name` 由用户提供）；模板内容与当前模板仓一致。待 main 写作任务到达后，coordinator 再在同一项目仓里生成/更新 `tasks/*` 与 `memory/*` 的写作产物并推进协作。
-- 其他角色使用你下发的 **repository_url + access_token** 克隆或更新同一项目仓。
+- **远程项目仓由 coordinator 创建**：模板来自 `https://github.com/zhangyoujian/multi-agent.git`；仓库名与写作主题相关。
+- **TOKEN 由 main 在创建智能体后引导用户提供并下发给你**；你再转发给其他角色，并提醒各自写入工作区私有 `MEMORY.md`。
 
 ## 其他智能体
 
-- researcher：写 `research_data/**`；完成后通知你更新进度。
-- writer：写 `drafts/**`；完成后通知你更新进度。
-- reviewer：追加 `comments/review_comments.md`；完成后通知你更新进度。
+- researcher / writer / reviewer：只负责各自目录与通知；不创建远程仓。
 ```
 
 ---
 
 ## 禁止行为摘要
 
-- 将 **TOKEN** 写入 Git 跟踪文件或提交说明。
+- 在用户未提出写作需求时，配合 main 不得提前启动建仓与任务拆解（以 `docs/INSTRUCTION.md` 为准）。
+- 将 **TOKEN** 写入协作仓或提交说明。
 - 无 `[coordinator]` 前缀提交。
-- 修改与协调职责无关的目录（如直接改研究稿、草稿正文）。

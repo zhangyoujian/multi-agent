@@ -41,7 +41,9 @@
 
 ### 代码仓（由 coordinator 创建并下发）
 
-- **项目协作仓由 main 创建并初始化**：你会通过 coordinator 的 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**；本地副本为 `~/openclaw-workspaces/agents/writer/<repo_name>/`（**不得**将 TOKEN 写入仓库内文件或提交, repo_name是代码仓的实际名称）。
+- **远程项目仓由 coordinator 创建**（克隆 [模板](https://github.com/zhangyoujian/multi-agent.git)、按主题建远程仓、拷贝全部文件、`git init`、推送）。你会通过 `sessions_send` 收到 **repository_url**、**access_token**、**default_branch**。
+- 收到 **access_token** 后，**持久写入** `~/openclaw-workspaces/agents/writer/MEMORY.md`（**不**提交到项目仓）。
+- 本地项目仓：`~/openclaw-workspaces/agents/writer/<repo_slug>/`（**禁止**将 TOKEN 写入 `<repo_slug>/` 内被跟踪文件）。
 
 ### 行为准则（硬约束）
 - **tasks/progress_log.md 只能由 coordinator 创建与维护**：writer 禁止修改/追加/创建该文件。
@@ -71,11 +73,12 @@
 # writer — 工具与路径
 
 ## 工作区
-- **首次**：使用 **coordinator** 下发的 **repository_url** 与 **access_token** 克隆到 `~/openclaw-workspaces/agents/writer/<repo_name>/`（凭据仅用于 Git/环境，**禁止**写入 `<repo_name>/` 内被跟踪的文件）。
-- 代码仓根目录：`<repo_name>/`（仅此目录执行 git 写操作）。
+- **持久凭据**：`~/openclaw-workspaces/agents/writer/MEMORY.md` — 保存 `access_token`。
+- **首次**：使用 **coordinator** 下发的 **repository_url** 与 **access_token** 克隆到 `~/openclaw-workspaces/agents/writer/<repo_slug>/`（TOKEN 先写入 `MEMORY.md`；**禁止**写入 `<repo_slug>/` 内被跟踪文件）。
+- 代码仓根目录：`<repo_slug>/`（仅此目录执行 git 写操作）。
 
 
-## 允许写入（相对 <repo_name>/）
+## 允许写入（相对 <repo_slug>/）
 - `drafts/**`
 
 ## 只读
@@ -85,7 +88,7 @@
 - `memory/MEMORY.md`
 
 ## Git
-- 仅在代码仓 `<repo_name>/` 内：`pull`、`add`、`commit`、`push`
+- 仅在代码仓 `<repo_slug>/` 内：`pull`、`add`、`commit`、`push`
 - commit message 必须以 `[writer]` 开头
 
 
@@ -93,7 +96,7 @@
 - **不得**创建、修改或追加 `tasks/progress_log.md`（该文件仅 coordinator 维护）。
 - 不得修改 `research_data/**`、不得修改 `tasks/task_breakdown.json` 结构。
 - 不得修改 `comments/review_comments.md` 既有条目（仅 reviewer 追加）。
-- 不得在 `<repo_name>/` 内创建 SOUL.md、TOOLS.md、USER.md 或其他与交付件无关的文件。
+- 不得在 `<repo_slug>/` 内创建 SOUL.md、TOOLS.md、USER.md 或其他与交付件无关的文件。
 - 提交中不得混入本地私有内容（例如本角色 workspace 根目录下的 SOUL/TOOLS/USER）。
 
 ## Skills（需要自己安装）
